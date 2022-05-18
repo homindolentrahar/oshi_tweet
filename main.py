@@ -17,6 +17,9 @@ class OshiTweetStream(tweepy.StreamingClient):
     def on_tweet(self, tweet):
         tweet_data = tweet.data
 
+        if tweet_data['text'].__contains__('https://t.co/'):
+            client.retweet(tweet_id=tweet_data['id'], user_auth=True)
+
         client.like(tweet_id=tweet_data['id'], user_auth=True)
         print(tweet_data)
 
@@ -52,5 +55,10 @@ if __name__ == '__main__':
 
     oshi_account = client.get_user(username='N_ShaniJKT48', user_auth=True)
 
-    streaming_client.add_rules(tweepy.StreamRule('from:N_ShaniJKT48'))
+    rule_query = 'from:N_ShaniJKT48 -is:reply -is:retweet'
+    rule_ids = list(map(lambda rule: rule.id, streaming_client.get_rules().data))
+
+    streaming_client.delete_rules(ids=rule_ids)
+    streaming_client.add_rules(tweepy.StreamRule(rule_query))
+
     streaming_client.filter(threaded=True)
